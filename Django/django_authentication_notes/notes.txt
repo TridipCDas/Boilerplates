@@ -1,0 +1,110 @@
+Normally,there are 3 types of users in django.
+1. Supersuser 
+2. Admin (Staff User) Means user.is_staff== True
+3. User  Means user.is_staff== False
+Only Staff User and superuser can login to the /admin site.
+
+For this project
+1. Username: superuser   Password: superuser  (SUPERUSER)
+2. Username :User        Password: superuser1 (USER)
+3. Username :Staff       Password: superuser1 (STAFF)
+=======================================================================
+
+==>Permissions use the credentials from request.user and request.auth
+==>Permissions in REST framework are always defined as a list of permission classes.
+
+1.AllowAny==== Regardless of whether the user is authenticated or unauthenticated,It will allow access.
+
+2.IsAuthenticated==== Allow permission only to authenticated users.
+Should be used in those APIs,where we want to give access to only registered users.(Either of the 3 types)
+
+3.IsAdminUser ==== Deny permission to any User,unless user.is_staff is True.
+Should be used in those APIs where you want your API to only be accessible to a subset of
+trusted administrators. (only Supersuser or Staff User(Admin) )
+
+4.IsAuthenticatedOrReadOnly
+Authenticated users can do anything,but unauthenticated users can only read the data.
+
+5.DjangoModelPermissions
+
+==>Will show Unauthorized access for unauthenticated users.
+==>Will support on views having 
+
+But for authenticated users,.......
+Suppose There is a model Student.
+Apart from superuser, a normal User(auth.User Model or modification of auth.User) or a staff User
+can only view data. They cant add,delete or update data.
+
+So for this you need to go to /admin section and add the permissions as per required.
+
+=====================================================================================
+--------------------------- Custom Permissions---------------------------
+Suppose You want to create a permission where only POST method is accessible. Apart from that 
+no method is accessible,not even superuser can access it.
+
+create a file custompermissions.py (You can create the function in the views.py itself but this is a optimal way)
+
+== custompermissions.py
+from rest_framework.permissions import BasePermission
+class CustomPermission(BasePermission):
+      
+      def has_permission(self,request,view):
+           if request.method == 'POST':
+                return True
+           return False
+
+== views.py
+from rest_framework.authentication import BasicAuthentication
+from .custompermissions import CustomPermission
+class StudentModelViewset(APIView):
+    authentication_classes=[BasicAuthentication]
+    permission_classes=[CustomPermission]
+
+    .
+    .
+    .
+    .
+
+
+If you have multiple APIs and you want authentication and permission for all classes:
+then inside settings.py you can put the below lines.
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':[
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+
+But if you don't want this on some API or want a different permission/authentication,
+then you can use locally in that API as demonstrated below.
+
+=============================================================================
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+class ExampleView(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        content = {
+            'user': unicode(request.user),  # `django.contrib.auth.User` instance.
+            'auth': unicode(request.auth),  # None
+        }
+        return Response(content)
+        
+        
+-----------OR-----------------------------
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
+def example_view(request, format=None):
+    content = {
+        'user': unicode(request.user),  # `django.contrib.auth.User` instance.
+        'auth': unicode(request.auth),  # None
+    }
+    return Response(content)

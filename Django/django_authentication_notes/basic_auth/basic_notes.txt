@@ -1,0 +1,23 @@
+For this project
+1. Username: superuser   Password: superuser  (SUPERUSER)
+2. Username :User        Password: superuser1 (USER)
+3. Username :Staff       Password: superuser1 (STAFF)
+
+=================== BASIC AUTHENTICATION================================
+This authentication scheme uses HTTP Basic Authentication, signed against a user's username and password.
+
+If successfully authenticated, BasicAuthentication provides the following credentials.
+
+=>request.user will be a Django User instance.
+=>request.auth will be None.
+
+Note: If you use BasicAuthentication in production you must ensure that your API is only available over https. You should also ensure that your API clients will always re-request the username and password at login, and will never store those details to persistent storage.
+
+Q: How to use in python requests?
+
+import requests
+from requests.auth import HTTPBasicAuth
+res = requests.get("http://localhost:8000/basic",auth = HTTPBasicAuth('superuser','superuser'))
+
+POSTMAN::
+Go to Authorization / Basic Auth
