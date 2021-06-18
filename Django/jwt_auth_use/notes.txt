@@ -1,0 +1,69 @@
+1. pip3 install djangorestframework-simplejwt
+
+For this project
+1. Username: superuser   Password: superuser  (SUPERUSER)
+2. Username :User        Password: superuser1 (USER)
+3. Username :Staff       Password: superuser1 (STAFF)
+
+
+CONFIGURE SIMPLE JWT===================================================
+
+settings.py--------
+==> If you want globally
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':(
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+Or Can set locally in each required views
+
+urls.py----------
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+urlpatterns =[
+    path('gettoken/',TokenObtainPairView.as_view(),name="token_obtain_pair"),
+    path('refreshtoken/',TokenRefreshView.as_view(),name="token_refresh")
+]
+
+You can also include a route for SIMPLE JWT's TokenVerifyView if you wish to allow API users to verify HMAC-signed tokens 
+without having access to your signing key.
+
+urls.py---------------
+from rest_framework_simplejwt.views import TokenVerifyView
+urlpatterns = [
+    path('verifytoken/',TokenVerifyView.as_view(),name="token_verify")
+]
+
+You can change the default configurations in settings.py.
+https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+
+HOW TO USE ===========================
+1.gettoken/
+POST :
+{
+    "username":"superuser",
+    "password":"password"
+}
+
+Response::
+{
+    "access":"",
+    "refresh":""
+}
+
+2.To use the Access Token,
+In Authorization Header, you need to use
+Bearer {access_token}
+
+3.To use the refresh token,
+POST:
+refreshtoken/
+{
+    "refresh":"sfsdfsdfsdfsdfsd"
+}
+
+4.To verify the token(access)
+POST:
+verifytoken/
+{
+    "token":"ffffffffffffffff"
+}
