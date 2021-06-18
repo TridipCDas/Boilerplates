@@ -1,0 +1,75 @@
+GENERAL APPROACH FOR TOKEN AUTHENTICATION
+
+In Django,token can be generated in the following ways.
+
+1. Going to admin page,and creating token for every user.
+2. Through terminal, python manage.py drf_create_token User
+3. By exposing an API endpoint(HOW CLIENT CAN ASK/CREATE TOKEN)
+
+For Point 3.
+Suppose to GET/POST on an API,you need to provide the authentication details
+What Frontend will do??
+It will first post the login credentials to obtain the token from the gettoken API.
+Then after receiving the token,it will send the token in the header.
+
+What backend will do??
+On receiving the request,it will extract the token from the headers.After that ,it will decode 
+to obtain neccessary credentials .Suppose after decoding ,got the email and thereafter,put a check
+to allow access based on the availability of the data in the database
+
+
+FOLLOWING CODE CAN BE TRIED ON SHELL
+from rest_framework.authtoken.models import Token
+token = Token.objects.create(user=...)
+print(token.key)
+
+
+For clients to authenticate, the token key should be included in the Authorization HTTP header. The key should be prefixed by the string literal "Token", with whitespace separating the two strings. For example:
+
+Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+Note: If you want to use a different keyword in the header, such as Bearer, simply subclass TokenAuthentication and set the keyword class variable.
+
+If successfully authenticated, TokenAuthentication provides the following credentials.
+
+request.user will be a Django User instance.
+request.auth will be a rest_framework.authtoken.models.Token instance.
+Unauthenticated responses that are denied permission will result in an HTTP 401 Unauthorized response with an appropriate WWW-Authenticate header. For example:
+
+WWW-Authenticate: Token
+
+============ TOKEN AUTHENTICATION USING DJANGO's DEFAULT SYSTEM====================
+
+INSTALLED_APPS = [
+    ...
+    'rest_framework.authtoken'
+]
+
+:::Make sure to migrate 
+
+
+For this project, Client Must post username and password either in form data or in json to get the TOKEN
+
+POST API for this project to obtain token: token_1/gettoken/
+from rest_framework.authtoken.views import obtain_auth_token
+path('gettoken/',obtain_auth_token)
+i/p:
+{
+    "username":"superuser",
+    "password":"superuser"
+}
+
+o/p:
+{
+    "token": "17dee1813e60881c6c2294ad1527bf5ef52597e2"
+}
+
+IN POSTMAN:
+Go to Authorization/Oauth 2.0
+Header-Prefix = token/Token
+token = paste there
+and hit the corresponding API
+
+But suppose ,you want to modify the output response.
+THen modify the ObtainAuthToken as done in auth.py
+
+==========================================================
